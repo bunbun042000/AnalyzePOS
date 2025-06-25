@@ -19,16 +19,18 @@ def read_posfile(__processing_filename):
         for _s_line in _f:
             if "%  GPST" in _s_line:
                 break
-            _i += 1
+            _i += 2
 
-    _result = pd.read_csv(__processing_filename, skiprows=_i, parse_dates=[0, 1], 
+    _result = pd.read_csv(__processing_filename, skiprows=_i,  
                           low_memory=False, skipinitialspace=True, encoding='utf-8',
-                          on_bad_lines='skip', sep='\\s+').rename(
-        columns={'%  GPST                ': 'GPST', 'latitude(deg)': 'latitude', 'longitude(deg)': 'longitude',
-                 'height(m)': 'height'})
+                          on_bad_lines='skip', sep='\\s+',
+                          names=('GPS_date',  'GPS_time', 'latitude', 'longitude',
+                 'height', 'Q', 'ns', 'sdn(m)', 'sde(m)', 'sdu(m)', 'sdne(m)', 'sdeu(m)',
+                   'sdun(m)', 'age(s)', 'ratio'))
 
-    _positions = _result[['GPST', 'latitude', 'longitude', 'height', 'Q', 'ns']].astype(
+    _positions = _result[['latitude', 'longitude', 'height', 'Q', 'ns']].astype(
         {'latitude': float, 'longitude': float, 'height': float})
+    _positions['GPST'] = pd.to_datetime(_result['GPS_date'].str.cat(_result['GPS_time'], sep=' '), unit='ns')
     return _positions
 
 def convert_enu(__positions, __quality, __origin):
@@ -80,10 +82,15 @@ def plot_route(__enu, figname=None, labelname=None):
 
     en_x = enu.GetENU()['e'].to_numpy()
     en_y = enu.GetENU()['n'].to_numpy()
+    en_x_q1 = enu.GetENU()[enu.GetENU()['Q'] == 1]['e'].to_numpy()
+    en_y_q1 = enu.GetENU()[enu.GetENU()['Q'] == 1]['n'].to_numpy()
+    en_x_q2 = enu.GetENU()[enu.GetENU()['Q'] == 2]['e'].to_numpy()
+    en_y_q2 = enu.GetENU()[enu.GetENU()['Q'] == 2]['n'].to_numpy()
 #    colormap = plt.get_cmap('tab10')
 #    col = colormap(enu.GetENU()['Q'].to_numpy())
 
-    ax.plot(en_x,en_y, c='b')
+    ax.scatter(en_x_q1,en_y_q1, c='g', s=1)
+    ax.scatter(en_x_q2,en_y_q2, c='orange', s=1)
 #    ax.scatter(en_x, en_y, c=enu.GetENU()['Q'], alpha=1, cmap=cm.rainbow)
         
     ax.legend(["test"])
@@ -199,11 +206,13 @@ def plot_visible_satellites(__enu1, figname=None):
 
     fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,3))
 
-    ns1 = pd.Series(enu1.GetENU()['ns'].to_numpy(), index=enu1.GetENU()['GPST'].to_numpy()).dropna()
+    ns1 = pd.Series(enu1.GetENU()[enu1.GetENU()['Q'] == 1]['ns'].to_numpy(), index=enu1.GetENU()[enu1.GetENU()['Q'] == 1]['GPST'].to_numpy()).dropna()
+    ns2 = pd.Series(enu1.GetENU()[enu1.GetENU()['Q'] == 2]['ns'].to_numpy(), index=enu1.GetENU()[enu1.GetENU()['Q'] == 2]['GPST'].to_numpy()).dropna()
     axes.set_ylabel('ns')
     axes.set_xlabel('time')
     axes.xaxis.set_major_formatter(DateFormatter('%H:%M'))
-    axes.plot(ns1[datetime.datetime(2023, 6, 22, 22, 57, 13):], color='b')
+    axes.bar(ns1.index, ns1.to_numpy(), color='g')
+    axes.bar(ns2.index, ns2.to_numpy(), color='orange')
 
     if (figname != ""):
         fig.savefig(figname)
@@ -238,10 +247,10 @@ def main():
     #Origin.Setxyz(-3791223.295156889, 2728184.801227155, 4328820.62403418)
 #    frequency1 = "L1"
 #    frequency2 = "L1+L2"
-    startdate = "20240620"
-    enddate = "20240620"
-    time1 = "230133"
-    time2 = "233325"
+    startdate = "20241212"
+    enddate = "20241212"
+    time1 = "095033"
+    time2 = "101628"
     elevationMask1 = "ElevMask_20"
     duration = pd.date_range(startdate, enddate)
     for i in duration:
