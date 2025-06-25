@@ -35,7 +35,7 @@ def convert_enu(__positions, __quality, __origin):
     pos_in_xyz = ecef.ecef().Setblhdeg_array(positions)
 
     if __origin == None:
-        pos_mean = ecef.ecef().Setblhdeg_array(positions[positions['Q'] == __quality]).Getxyz().mean()
+        pos_mean = ecef.ecef().Setblhdeg_array.Getxyz().mean()
         print('x = ', pos_mean['x'], ' y = ', pos_mean['y'], ' z = ', pos_mean['z'])
         position_origin = ecef.ecef().Setxyz(pos_mean['x'], pos_mean['y'], pos_mean['z'])
         print('Latitiude = ', position_origin.Getblhdeg().at[0, 'latitude'], '  Longitude = ', position_origin.Getblhdeg().at[0, 'longitude'], ' height = ', position_origin.Getblhdeg().at[0, 'height']);
@@ -56,8 +56,8 @@ def plot_track(__enu1, q, figname=None):
     enu1 = __enu1
 
 
-    en1_x = enu1.GetENU()[enu1.GetENU()['Q'] == q]['e'].to_numpy()
-    en1_y = enu1.GetENU()[enu1.GetENU()['Q'] == q]['n'].to_numpy()
+    en1_x = enu1.GetENU()['e'].to_numpy()
+    en1_y = enu1.GetENU()['n'].to_numpy()
 
     plt.figure(figsize=(8,8))
     plt.scatter(en1_x, en1_y, s=1, marker=".")
@@ -167,8 +167,8 @@ def main():
 
     np.set_printoptions(precision=10)
     pd.options.display.float_format = '{:.6f}'.format
-    #mode = "Single"
-    mode = "Kinematic"
+    mode = "Single"
+    #mode = "Kinematic"
     #mode = "Static"
     if mode == "Single":
         quality = 5
