@@ -52,6 +52,26 @@ def convert_enu(__positions, __quality, __origin):
 
     return enu, position_origin
 
+def plot_track(__enu1, q, figname=None):
+    enu1 = __enu1
+
+
+    en1_x = enu1.GetENU()[enu1.GetENU()['Q'] == q]['e'].to_numpy()
+    en1_y = enu1.GetENU()[enu1.GetENU()['Q'] == q]['n'].to_numpy()
+
+    plt.figure(figsize=(8,8))
+    plt.scatter(en1_x, en1_y, s=1, marker=".")
+
+    g = plt.subplot()
+    g.set_ylim([0,6000])
+    g.set_xlim([-6500,-500])
+
+
+    if (figname != ""):
+        plt.savefig(figname)
+
+    plt.show()
+
 def plot_scatter(__enu1, q, figname=None):
     enu1 = __enu1
 
@@ -104,20 +124,21 @@ def plot_scatter(__enu1, q, figname=None):
 def plot_position(__enu1, figname=None):
     enu1 = __enu1
 
-    fig, axes = plt.subplots(3, 1, sharex=True, sharey=True)
+    fig, axes = plt.subplots(3, 1, sharex=True)
 
     e1 = pd.Series(enu1.GetENU()['e'].to_numpy(), index=enu1.GetENU()['GPST'].to_numpy()).dropna()
     n1 = pd.Series(enu1.GetENU()['n'].to_numpy(), index=enu1.GetENU()['GPST'].to_numpy()).dropna()
     u1 = pd.Series(enu1.GetENU()['u'].to_numpy(), index=enu1.GetENU()['GPST'].to_numpy()).dropna()
 
-    start = datetime.datetime(2021, 6, 22, 4, 51, 45)
-    end = datetime.datetime(2021, 6, 22, 5, 0, 0)
+    start = datetime.datetime(2021, 11, 25, 6, 41, 00)
+    end = datetime.datetime(2021, 11, 25, 7, 30, 0)
     axes[0].plot(e1[start:end], color='b')
     axes[0].set_ylabel('e')
     axes[1].plot(n1[start:end], color='b')
     axes[1].set_ylabel('n')
     axes[2].plot(u1[start:end], color='b')
     axes[2].set_ylabel('u')
+    axes[2].set_ylim(bottom=-20,top=30)
 
     if (figname != ""):
         fig.savefig(figname)
@@ -134,7 +155,7 @@ def plot_visible_satellites(__enu1, figname=None):
     axes.set_xlabel('time')
     axes.xaxis.set_major_formatter(DateFormatter('%H:%M'))
     axes.set_ylim(bottom=0,top=max(ns1)+1)
-    axes.plot(ns1[datetime.datetime(2021, 6, 22, 4, 51, 45):], color='b')
+    axes.plot(ns1[datetime.datetime(2021, 11, 25, 6, 41, 00):], color='b')
 
     if (figname != ""):
         fig.savefig(figname)
@@ -152,11 +173,12 @@ def main():
     if mode == "Single":
         quality = 5
     elif mode == "Kinematic":
-        quality = 1
+        quality = 2
     elif mode == "Static":
         quality = 1
 
-    basedir = "D:\\home\\GNSS_data\\Solution\\"
+    basedir = ""
+    figdir="..\\Figs\\"
     origin = ecef.ecef()
     roverstation = "19K004"
     # Station code: TR36444421702 別当前
@@ -172,9 +194,9 @@ def main():
     #Origin.Setxyz(-3791223.295156889, 2728184.801227155, 4328820.62403418)
 #    frequency1 = "L1"
     frequency2 = "L1+L2"
-    startdate = "20210622"
-    enddate = "20210622"
-    time = "045145"
+    startdate = "20211125"
+    enddate = "20211125"
+    time = "064100"
 #    time = "000000"
     satellites = "G,J"
     duration = pd.date_range(startdate, enddate)
@@ -182,16 +204,16 @@ def main():
         date = i.strftime("%Y%m%d")
         print(date)
 
-        processing_filename1 = basedir + roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "\\" + roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "_" + date + "_" + time + "_" + satellites + ".pos"
+        processing_filename1 = roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "_" + date + "_" + time + "_" + satellites + ".pos"
         positions1 = read_posfile(processing_filename1)
 
         enu1, orig1 = convert_enu(positions1, quality, origin)
 
-        save_figname = basedir + roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "_with_Q=" + str(quality) + "_" + date + "_" + time + ".pdf"
-        plot_scatter(enu1, quality, save_figname)
-        save_figname2 = basedir + roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "_with_Q=" + str(quality) + "_" + date + "_" + time + "_position.pdf"
+        save_figname = figdir + roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "_with_Q=" + str(quality) + "_" + date + "_" + time + ".pdf"
+        plot_track(enu1, quality, save_figname)
+        save_figname2 = figdir + roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "_with_Q=" + str(quality) + "_" + date + "_" + time + "_position.pdf"
         plot_position(enu1, save_figname2)
-        save_figname3 = basedir + roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "_with_Q=" + str(quality) + "_" + date + "_" + time + "_ns.pdf"
+        save_figname3 = figdir + roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "_with_Q=" + str(quality) + "_" + date + "_" + time + "_ns.pdf"
         plot_visible_satellites(enu1, save_figname3)
 
         output_filename1 = basedir + roverstation + "_" + mode + "_with_" + baseStation1 + "_freq_" + frequency2 + "_" + date + "_" + time + "_" + satellites + "_ENU_.csv"
