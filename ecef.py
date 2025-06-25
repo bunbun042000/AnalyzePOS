@@ -10,7 +10,7 @@ import pandas as pd
 
 
 def dms2deg(dmsdeg):
-    fact, dddmmm = np.modf(dmsdeg/100.0)
+    fact, dddmm = np.modf(dmsdeg/100.0)
     mm, ddd = np.modf(dddmm/100.0)
     deg = ddd + 10.0 / 6.0 * mm + fact/36.0
     return deg
