@@ -146,7 +146,7 @@ class enu():
         return self.position
 
     def SetDate(self, date):
-        self.position['GPST'] = pd.to_datetime(date)
+        self.position['GPST'] = pd.to_datetime(date, format='%Y-%m-%d %x')
 
     def SetNsat(self, nsat):
         self.position['ns'] = nsat

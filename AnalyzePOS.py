@@ -23,7 +23,7 @@ def read_posfile(__processing_filename):
 
     _result = pd.read_csv(__processing_filename, skiprows=_i, parse_dates=[0, 1], 
                           low_memory=False, skipinitialspace=True, encoding='utf-8',
-                          on_bad_lines='skip', delim_whitespace=True).rename(
+                          on_bad_lines='skip', sep='\\s+').rename(
         columns={'%  GPST                ': 'GPST', 'latitude(deg)': 'latitude', 'longitude(deg)': 'longitude',
                  'height(m)': 'height'})
 
@@ -86,7 +86,7 @@ def plot_route(__enu, figname=None, labelname=None):
     ax.plot(en_x,en_y, c='b')
 #    ax.scatter(en_x, en_y, c=enu.GetENU()['Q'], alpha=1, cmap=cm.rainbow)
         
-    ax.legend()
+    ax.legend(["test"])
     ax.grid(True)
     ax.set_aspect('equal')
 
@@ -217,11 +217,11 @@ def main():
     pd.options.display.float_format = '{:.6f}'.format
     #mode = "Single"
     mode1 = "Kinematic"
-    quality = 99
+    quality = 1
     mode2 = "Static"
     #mode = "Static"
 
-    basedir = os.getcwd() + "\\..\\..\\..\\GNSS_data\\Solution\\"
+    basedir = "H:\\GNSS_data\\Solutions\\19K004_with_19K003_Kinematic\\"
     origin = ecef.ecef()
     roverstation = "19K004"
     # Station code: TR36444421702 別当前
@@ -234,40 +234,40 @@ def main():
     #origin.Setxyz(-3787385.589, 2738175.488, 4325882.996)
     #baseStation2 = "02P203" # kushiro
     baseStation = "19K003"
-    origin.Setblhdeg(43.0147291039807, 144.262543338471, 38.7477744)
+    origin.Setblhdeg(43.0157662, 144.26100490, 49.312)
     #Origin.Setxyz(-3791223.295156889, 2728184.801227155, 4328820.62403418)
 #    frequency1 = "L1"
 #    frequency2 = "L1+L2"
-    startdate = "20230622"
-    enddate = "20230622"
-    time2 = "225713"
-    time1 = "232500"
+    startdate = "20240620"
+    enddate = "20240620"
+    time1 = "230133"
+    time2 = "233325"
     elevationMask1 = "ElevMask_20"
     duration = pd.date_range(startdate, enddate)
     for i in duration:
         date = i.strftime("%Y%m%d")
         print(date)
 
-        processing_filename1 = basedir + roverstation + "_" + mode1 + "_with_" + baseStation + "\\" + roverstation + "_" + date + "_" + time1 + "_" + elevationMask1 + ".pos"
-        processing_filename2 = basedir + roverstation + "_" + mode2 + "_with_" + baseStation + "\\" + roverstation + "_" + date + "_" + time2 + ".pos"
+        processing_filename1 = basedir + roverstation + "_with_" + baseStation + "_BS_" + mode1 + "_" + date + "-" + time1 + "_LatLong" + ".pos"
+#        processing_filename2 = basedir + roverstation + "_" + mode2 + "_with_" + baseStation + "\\" + roverstation + "_" + date + "_" + time2 + ".pos"
         positions1 = read_posfile(processing_filename1)
-        positions2 = read_posfile(processing_filename2)
+#        positions2 = read_posfile(processing_filename2)
 
-        enu2, orig2 = convert_enu(positions2, quality, origin)
+#        enu2, orig2 = convert_enu(positions2, quality, origin)
         enu1, orig1 = convert_enu(positions1, quality, origin)
 
-        save_figname = basedir + roverstation + "_" + mode1 + "_with_" + baseStation + "_vs_with_" + mode2 + "_with_" + baseStation + "_" + date + "_" + time2 + ".pdf"
-        plot_scatter(enu1, enu2, quality, save_figname)
+#        save_figname = basedir + roverstation + "_" + mode1 + "_with_" + baseStation + "_vs_with_" + mode2 + "_with_" + baseStation + "_" + date + "_" + time2 + ".pdf"
+#        plot_scatter(enu1, enu2, quality, save_figname)
         save_figname2 = basedir + roverstation + "_" + mode1 + "_with_" + baseStation + "_" + date + "_" + time2 + "_route.pdf"
         plot_route(enu1, save_figname2)
         save_figname3 = basedir + roverstation + "_" + mode1 + "_with_" + baseStation + "_" + date + "_" + time2 + "_ns.pdf"
         plot_visible_satellites(enu1, save_figname3)
 
-        output_filename1 = basedir + roverstation + "_" + mode1 + "_with_" + baseStation + "_" + date + "_" + time + "_ENU_.csv"
-        output_filename2 = basedir + roverstation + "_" + mode2 + "_with_" + baseStation + "_" + date + "_" + time + "_ENU_.csv"
+#        output_filename1 = basedir + roverstation + "_" + mode1 + "_with_" + baseStation + "_" + date + "_" + time + "_ENU_.csv"
+#        output_filename2 = basedir + roverstation + "_" + mode2 + "_with_" + baseStation + "_" + date + "_" + time + "_ENU_.csv"
 
-        enu1.GetENU().to_csv(output_filename1, index=False, columns=['GPST', 'e', 'n', 'u', 'Q', 'ns', 'origin_latitude', 'origin_longitude', 'origin_height', '2drms'])
-        enu2.GetENU().to_csv(output_filename2, index=False, columns=['GPST', 'e', 'n', 'u', 'Q', 'ns', 'origin_latitude', 'origin_longitude', 'origin_height', '2drms'])
+#        enu1.GetENU().to_csv(output_filename1, index=False, columns=['GPST', 'e', 'n', 'u', 'Q', 'ns', 'origin_latitude', 'origin_longitude', 'origin_height', '2drms'])
+#        enu2.GetENU().to_csv(output_filename2, index=False, columns=['GPST', 'e', 'n', 'u', 'Q', 'ns', 'origin_latitude', 'origin_longitude', 'origin_height', '2drms'])
 
 if __name__ == '__main__':
     main()
