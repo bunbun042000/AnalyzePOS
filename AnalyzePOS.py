@@ -206,13 +206,15 @@ def plot_visible_satellites(__enu1, figname=None):
 
     fig, axes = plt.subplots(1, 1, sharex=True, figsize=(8,3))
 
+#    print("GPST = ", enu1.GetENU()[enu1.GetENU()['Q'] == 1]['GPST'].to_numpy())
+
     ns1 = pd.Series(enu1.GetENU()[enu1.GetENU()['Q'] == 1]['ns'].to_numpy(), index=enu1.GetENU()[enu1.GetENU()['Q'] == 1]['GPST'].to_numpy()).dropna()
     ns2 = pd.Series(enu1.GetENU()[enu1.GetENU()['Q'] == 2]['ns'].to_numpy(), index=enu1.GetENU()[enu1.GetENU()['Q'] == 2]['GPST'].to_numpy()).dropna()
     axes.set_ylabel('ns')
     axes.set_xlabel('time')
     axes.xaxis.set_major_formatter(DateFormatter('%H:%M'))
-    axes.bar(ns1.index, ns1.to_numpy(), color='g')
-    axes.bar(ns2.index, ns2.to_numpy(), color='orange')
+    axes.scatter(ns1.index, ns1.to_numpy(), s=5, color='g')
+    axes.scatter(ns2.index, ns2.to_numpy(), s=5, color='orange')
 
     if (figname != ""):
         fig.savefig(figname)
@@ -230,7 +232,7 @@ def main():
     mode2 = "Static"
     #mode = "Static"
 
-    basedir = "H:\\GNSS_data\\Solutions\\19K004_with_19K003_Kinematic\\"
+    basedir = "H:\\GNSS_data\\Solutions\\19K004_with_25K003_Kinematic\\"
     origin = ecef.ecef()
     roverstation = "19K004"
     # Station code: TR36444421702 別当前
@@ -242,16 +244,16 @@ def main():
     #baseStation1 = "05S052" # Shoro
     #origin.Setxyz(-3787385.589, 2738175.488, 4325882.996)
     #baseStation2 = "02P203" # kushiro
-    baseStation = "19K003"
-    origin.Setblhdeg(43.0157662, 144.26100490, 49.312)
+    baseStation = "25K003"
+    origin.Setblhdeg(43.015745611, 144.260966664, 50.2789)
     #Origin.Setxyz(-3791223.295156889, 2728184.801227155, 4328820.62403418)
 #    frequency1 = "L1"
 #    frequency2 = "L1+L2"
-    startdate = "20241212"
-    enddate = "20241212"
-    time1 = "095033"
-    time2 = "101628"
-    elevationMask1 = "ElevMask_20"
+    startdate = "20250604"
+    enddate = "20250604"
+    time1 = "090936"
+    time2 = "093456"
+    elevationMask1 = "ElevMask_10"
     duration = pd.date_range(startdate, enddate)
     for i in duration:
         date = i.strftime("%Y%m%d")
